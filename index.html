@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zariah HomeCare - Rekap Pendapatan</title>
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --purple: #3b2374;
+            --purple-light: #f3effa;
+            --teal: #009698;
+            --teal-light: #e6f6f6;
+            --text-dark: #2d2b38;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --red: #e53e3e;
+            --gray-text: #64748b;
+            --green: #2e7d32;
+            --orange: #e65100;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(59, 35, 116, 0.08);
+            padding: 24px;
+            margin-bottom: 40px;
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--purple-light);
+            margin-bottom: 16px;
+        }
+
+        .logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--teal);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Menu Navigasi Tab */
+        .nav-tabs {
+            display: flex;
+            background-color: var(--purple-light);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: var(--purple);
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--white);
+            color: var(--purple);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        /* Card Filter Bulan/Tahun */
+        .filter-card {
+            background-color: var(--teal-light);
+            border: 1px solid rgba(0, 150, 152, 0.2);
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-card label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--teal);
+            white-space: nowrap;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            font-size: 0.85rem;
+            background-color: #fafafa;
+            color: var(--text-dark);
+            transition: all 0.2s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--teal);
+            background-color: var(--white);
+            box-shadow: 0 0 0 3px rgba(0, 150, 152, 0.15);
+        }
+
+        .total-card {
+            background: linear-gradient(135deg, var(--purple), #54339b);
+            color: var(--white);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 16px rgba(59, 35, 116, 0.25);
+        }
+
+        .total-card p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .total-card h2 {
+            font-size: 1.9rem;
+            margin-top: 6px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .form-group .full {
+            grid-column: span 2;
+        }
+
+        label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+            color: var(--purple);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, var(--teal), #007a7c);
+            color: var(--white);
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 150, 152, 0.25);
+        }
+
+        .btn:hover {
+            opacity: 0.92;
+        }
+
+        .table-container {
+            margin-top: 24px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        th, td {
+            padding: 10px 6px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--teal-light);
+            color: var(--teal);
+            font-weight: 700;
+        }
+
+        .badge-lunas {
+            color: var(--green);
+            background-color: #e8f5e9;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        .badge-dp {
+            color: var(--orange);
+            background-color: #fff3e0;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--red);
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chart-box {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-top: 10px;
+        }
+
+        .empty-msg {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray-text);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <img src="logo.jpg" alt="Zariah HomeCare Logo" class="logo" onerror="this.style.display='none'">
+        <p>REKAP PENDAPATAN VISIT</p>
+    </header>
+
+    <!-- Navigasi Menu Tab -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('pencatatan')">📝 Input & Tabel</button>
+        <button class="tab-btn" onclick="switchTab('grafik')">📊 Grafik Pendapatan</button>
+    </div>
+
+    <!-- TAB 1: INPUT & TABEL PENDAPATAN -->
+    <div id="pencatatan" class="tab-content active">
+        <!-- Filter Bulan & Tahun -->
+        <div class="filter-card">
+            <label>Periode:</label>
+            <select id="filterBulan" onchange="filterData()">
+                <option value="0">Januari</option>
+                <option value="1">Februari</option>
+                <option value="2">Maret</option>
+                <option value="3">April</option>
+                <option value="4">Mei</option>
+                <option value="5">Juni</option>
+                <option value="6">Juli</option>
+                <option value="7">Agustus</option>
+                <option value="8">September</option>
+                <option value="9">Oktober</option>
+                <option value="10">November</option>
+                <option value="11">Desember</option>
+            </select>
+            <select id="filterTahun" onchange="filterData()">
+            </select>
+        </div>
+
+        <div class="total-card">
+            <p>Total Pendapatan <span id="labelPeriode">Bulan Ini</span></p>
+            <h2 id="totalPendapatan">Rp 0</h2>
+        </div>
+
+        <form id="visitForm">
+            <div class="form-group">
+                <div>
+                    <label for="tanggal">Tanggal</label>
+                    <input type="date" id="tanggal" required>
+                </div>
+                <div>
+                    <label for="paket">Paket</label>
+                    <select id="paket" required>
+                        <option value="1x">1x Visit</option>
+                        <option value="3x">3x Visit</option>
+                        <option value="6x">6x Visit</option>
+                    </select>
+                </div>
+                <div class="full">
+                    <label for="namaPx">Nama Pasien (Px)</label>
+                    <input type="text" id="namaPx" placeholder="Nama lengkap pasien" required>
+                </div>
+                <div>
+                    <label for="payment">Payment</label>
+                    <select id="payment" required>
+                        <option value="Lunas">Lunas</option>
+                        <option value="DP">DP</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="nominal">Nominal (Rp)</label>
+                    <input type="number" id="nominal" placeholder="0" required>
+                </div>
+            </div>
+            <button type="submit" class="btn">+ Simpan Transaksi</button>
+        </form>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tgl</th>
+                        <th>Nama Px</th>
+                        <th>Paket</th>
+                        <th>Status</th>
+                        <th>Nominal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTabel">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 2: GRAFIK PENDAPATAN -->
+    <div id="grafik" class="tab-content">
+        <div class="filter-card">
+            <label>Tahun Grafik:</label>
+            <select id="filterTahunGrafik" onchange="updateChart()">
+            </select>
+        </div>
+
+        <div class="total-card" style="background: linear-gradient(135deg, var(--teal), #007a7c);">
+            <p>Total Pendapatan Tahun <span id="labelTahunGrafik">2026</span></p>
+            <h2 id="totalPendapatanTahun">Rp 0</h2>
+        </div>
+
+        <div class="chart-box">
+            <canvas id="incomeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    let dataVisit = JSON.parse(localStorage.getItem('zariah_data_v3')) || [];
+    let myChart = null;
+
+    const namaBulan = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
+    const form = document.getElementById('visitForm');
+    const dataTabel = document.getElementById('dataTabel');
+    const totalPendapatanEl = document.getElementById('totalPendapatan');
+    const filterBulan = document.getElementById('filterBulan');
+    const filterTahun = document.getElementById('filterTahun');
+    const filterTahunGrafik = document.getElementById('filterTahunGrafik');
+
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+    }
+
+    function initDropdowns() {
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+
+        filterTahun.innerHTML = '';
+        filterTahunGrafik.innerHTML = '';
+        for (let y = currentYear - 3; y <= currentYear + 5; y++) {
+            filterTahun.add(new Option(y, y));
+            filterTahunGrafik.add(new Option(y, y));
+        }
+
+        filterBulan.value = currentMonth;
+        filterTahun.value = currentYear;
+        filterTahunGrafik.value = currentYear;
+        
+        document.getElementById('tanggal').valueAsDate = today;
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+
+        if (tabId === 'grafik') {
+            updateChart();
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem('zariah_data_v3', JSON.stringify(dataVisit));
+    }
+
+    function filterData() {
+        const blnSelected = parseInt(filterBulan.value);
+        const thnSelected = parseInt(filterTahun.value);
+
+        document.getElementById('labelPeriode').innerText = `${namaBulan[blnSelected]} ${thnSelected}`;
+
+        dataTabel.innerHTML = '';
+        let total = 0;
+
+        const filtered = dataVisit.filter(item => {
+            const d = new Date(item.tanggal);
+            return d.getMonth() === blnSelected && d.getFullYear() === thnSelected;
+        });
+
+        filtered.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+        if (filtered.length === 0) {
+            dataTabel.innerHTML = `<tr><td colspan="6" class="empty-msg">Belum ada transaksi di bulan ini.</td></tr>`;
+        } else {
+            filtered.forEach((item) => {
+                total += parseInt(item.nominal);
+                const d = new Date(item.tanggal);
+                const tglFormatted = String(d.getDate()).padStart(2, '0');
+                
+                const originalIndex = dataVisit.indexOf(item);
+                const badgeClass = item.payment === 'Lunas' ? 'badge-lunas' : 'badge-dp';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${tglFormatted}</td>
+                    <td><b>${item.namaPx}</b></td>
+                    <td>${item.paket}</td>
+                    <td><span class="${badgeClass}">${item.payment}</span></td>
+                    <td>${formatRupiah(item.nominal)}</td>
+                    <td><button class="action-btn" onclick="hapusData(${originalIndex})">Hapus</button></td>
+                `;
+                dataTabel.appendChild(row);
+            });
+        }
+
+        totalPendapatanEl.innerText = formatRupiah(total);
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const tanggal = document.getElementById('tanggal').value;
+        const namaPx = document.getElementById('namaPx').value;
+        const paket = document.getElementById('paket').value;
+        const payment = document.getElementById('payment').value;
+        const nominal = document.getElementById('nominal').value;
+
+        dataVisit.push({ tanggal, namaPx, paket, payment, nominal });
+        saveData();
+
+        const d = new Date(tanggal);
+        filterBulan.value = d.getMonth();
+        filterTahun.value = d.getFullYear();
+
+        filterData();
+
+        document.getElementById('namaPx').value = '';
+        document.getElementById('nominal').value = '';
+    });
+
+    function hapusData(index) {
+        if (confirm("Apakah Anda yakin ingin menghapus data transaksi ini?")) {
+            dataVisit.splice(index, 1);
+            saveData();
+            filterData();
+        }
+    }
+
+    function updateChart() {
+        const thnSelected = parseInt(filterTahunGrafik.value);
+        document.getElementById('labelTahunGrafik').innerText = thnSelected;
+
+        const monthlyTotals = new Array(12).fill(0);
+        let totalTahun = 0;
+
+        dataVisit.forEach(item => {
+            const d = new Date(item.tanggal);
+            if (d.getFullYear() === thnSelected) {
+                const month = d.getMonth();
+                const amount = parseInt(item.nominal);
+                monthlyTotals[month] += amount;
+                totalTahun += amount;
+            }
+        });
+
+        document.getElementById('totalPendapatanTahun').innerText = formatRupiah(totalTahun);
+
+        const ctx = document.getElementById('incomeChart').getContext('2d');
+
+        if (myChart) {
+            myChart.destroy();
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                datasets: [{
+                    label: 'Pendapatan (Rp)',
+                    data: monthlyTotals,
+                    backgroundColor: 'rgba(0, 150, 152, 0.85)',
+                    borderColor: '#009698',
+                    borderWidth: 1.5,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Pendapatan: ' + formatRupiah(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) return 'Rp ' + (value / 1000000) + ' Jt';
+                                if (value >= 1000) return 'Rp ' + (value / 1000) + ' Rb';
+                                return 'Rp ' + value;
+                            },
+                            font: { size: 10 }
+                        }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
+    initDropdowns();
+    filterData();
+</script>
+
+</body>
+</html>
