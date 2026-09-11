@@ -1,0 +1,6 @@
+{
+  "appId": "com.zariah.homecare",
+  "appName": "Zariah HomeCare",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
